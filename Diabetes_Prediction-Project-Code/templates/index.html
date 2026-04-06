@@ -1,117 +1,604 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-  <title>Diabetes prediction</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DiabCheck — Diabetes Risk Predictor</title>
+  <meta name="description" content="AI-powered diabetes risk assessment tool using clinical health indicators. Get instant risk evaluation with personalized insights." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Variables ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <!-- CSS  -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="/static/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link href="/static/css2/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.7);
+      --bg-glass: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.5);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --teal: #14b8a6;
+      --teal-glow: rgba(20, 184, 166, 0.2);
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.15);
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ── Animated Background ──────────────────────────────────── */
+    .bg-grid {
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(20, 184, 166, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    .bg-grid::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+
+    /* ── Floating Orbs ────────────────────────────────────────── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.3;
+      animation: float 20s ease-in-out infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .orb-1 { width: 400px; height: 400px; background: var(--accent); top: -100px; left: -100px; }
+    .orb-2 { width: 300px; height: 300px; background: var(--teal); bottom: -100px; right: -50px; animation-delay: -7s; }
+    .orb-3 { width: 200px; height: 200px; background: #a78bfa; top: 50%; left: 50%; animation-delay: -14s; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Nav ──────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(10, 14, 26, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 1.3rem; font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--teal));
+      display: grid; place-items: center;
+      font-size: 1.1rem;
+    }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--accent-light); }
+
+    /* ── Hero ─────────────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 3rem 0 2rem;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.4rem 1.2rem;
+      font-size: 0.8rem;
+      color: var(--teal);
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-light) 60%, var(--teal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* ── Error Alert ──────────────────────────────────────────── */
+    .error-alert {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.5rem;
+      color: #fca5a5;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      animation: shake 0.4s ease;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    /* ── Form Card ────────────────────────────────────────────── */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    .form-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .form-header-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: var(--accent-glow);
+      display: grid; place-items: center;
+      font-size: 1.2rem;
+    }
+    .form-header h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    .form-header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Grid ─────────────────────────────────────────────────── */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-label {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    .input-label .icon { font-size: 1rem; }
+
+    .input-field {
+      width: 100%;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--text-primary);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+    }
+    .input-field::placeholder { color: var(--text-muted); }
+    .input-field:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+      background: rgba(255,255,255,0.06);
+    }
+    .input-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    /* ── Button ───────────────────────────────────────────────── */
+    .btn-wrap { margin-top: 2rem; text-align: center; }
+
+    .btn-predict {
+      display: inline-flex; align-items: center; gap: 0.75rem;
+      padding: 1rem 2.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-predict::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .btn-predict:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+    .btn-predict:hover::before { opacity: 1; }
+    .btn-predict:active { transform: translateY(0); }
+    .btn-predict svg { width: 20px; height: 20px; }
+
+    /* ── Result Section ───────────────────────────────────────── */
+    .result-section {
+      margin-top: 2rem;
+      animation: fadeUp 0.6s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .gauge-container {
+      position: relative;
+      width: 200px; height: 200px;
+      margin: 0 auto 1.5rem;
+    }
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.06);
+      stroke-width: 12;
+    }
+    .gauge-fill {
+      fill: none;
+      stroke-width: 12;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gauge-text {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .gauge-pct {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .gauge-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .risk-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1.5rem;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .risk-advice {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* ── Insights ─────────────────────────────────────────────── */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      text-align: left;
+    }
+    .insight-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.25rem;
+    }
+    .insight-feature {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    .insight-note {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .insight-status {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 0.4rem;
+    }
+    .insight-status.normal { background: var(--green); }
+    .insight-status.elevated { background: var(--red); }
+    .insight-status.low { background: var(--amber); }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 3rem 0 2rem;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+    footer p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    footer a {
+      color: var(--accent-light);
+      text-decoration: none;
+    }
+
+    /* ── Disclaimer ───────────────────────────────────────────── */
+    .disclaimer {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.5rem;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    .disclaimer strong { color: var(--amber); }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .container { padding: 1rem; }
+      .form-card, .result-card { padding: 1.5rem; }
+      .input-grid { grid-template-columns: 1fr; }
+      nav { padding: 0.8rem 1rem; }
+      .logo { font-size: 1.1rem; }
+      .nav-links a { font-size: 0.85rem; }
+    }
+  </style>
 </head>
-
 <body>
-  <nav class="light-blue lighten-1" role="navigation">
-    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Diabetes Prediction</a>
-      <ul class="right hide-on-med-and-down">
-        <li><a href="#">Home</a></li>
-      </ul>
 
+  <!-- Background effects -->
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Nav -->
+  <nav>
+    <a href="/" class="logo">
+      <span class="logo-icon">🩺</span>
+      <span>DiabCheck</span>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="#predict-form">Predict</a>
+    </div>
   </nav>
 
+  <div class="container">
 
-  <div class="section no-pad-bot" id="index-banner">
-    <div class="container">
-     <h5 style="text-align: center; color: brown; font-weight: 600;">{{pred}}</h5>
-      <h1 class="header center orange-text">Diabetes Prediction</h1>
-      <div class="row center">
-        <h5 class="header col s12 light">Predict the probability of having Diabetes
-        <br>
-        </h5>
-      </div>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="badge"><span class="badge-dot"></span> AI-Powered Assessment</div>
+      <h1>Diabetes Risk Predictor</h1>
+      <p>Enter your clinical health indicators below to get an instant AI-powered diabetes risk evaluation with personalized insights.</p>
+    </section>
 
-
-      <div class="row">
-        <form action="/predict" method="post" class="col s12">
-            <div class="row">
-        <div class="input-field col s4">
-          <label for="pregnancies"><b>Pregnancies</b></label>
-          <br>
-          <input placeholder="No. of Pregnancies" name="1" id="pregnancies" type="text" class="validate">
-        </div>
-                <div class="input-field col s4">
-                    <label for="last_name"><b>Glucose </b></label>
-                    <br>
-                    <input id="glucose" name="2" placeholder="Glucose level in sugar"  type="text" class="validate">
-    
-                </div>
-    
-                <div class="input-field col s4">
-                    <label for="_name"><b>BloodPressure</b></label>
-                    <br>
-                    <input id="bloodpressure" name="3" placeholder="BloodPressure" type="text" class="validate">
-    
-                </div>
-                <div class="input-field col s4">
-                    <label for="first_name"><b>SkinThickness</b></label>
-                    <br>
-                    <input placeholder="SkinThickness" name="4" id="skinthickness" type="text" class="validate">
-                </div>
-                <div class="input-field col s4">
-                    <label for="last_name"><b>Insulin</b></label>
-                    <br>
-                    <input id="insulin" name="5" placeholder="Insulin level"  type="text" class="validate">
-                </div>
-                <div class="input-field col s4">
-                  <label for="bmi"><b>BMI</b></label>
-                  <br>
-                  <input id="bmi" name="6" placeholder="Body Mass Index" type="text" class="validate">
-
-                </div>
-                <div class="input-field col s4">
-                    <label for="last_name"><b>DiabetesPedigreeFunction</b></label>
-                    <br>
-                    <input id="dpf" name="7" placeholder="DiabetesPedigreeFunction"  type="text" class="validate">
-                </div>
-                <div class="input-field col s4">
-                    <label for="_name"><b>Age</b></label>
-                    <br>
-          <input id="age" name="8" placeholder="Age" type="text" class="validate">
-                </div>
-    
-          </div>
-    
-          <div class="row center">
-    
-              <button type="submit" class="btn-large waves-effect waves-light orange">Predict Probability</button>
-
-          </div>
-        </form>
-  </div>
-
-      <br>
-
-     
-    <br><br>
-  </div>
-  </div>
-
-  <footer class="page-footer orange">
-    <div class="footer-copyright">
-      <div class="container" style="padding-bottom: 1rem; position: fixed; font-size: 1.2rem; margin-left: 5rem;">
-        <p>&copy;Meg</p>
-        <p>Megan</p>
-      </div>
+    <!-- Error -->
+    {% if error %}
+    <div class="error-alert">
+      <span>⚠️</span>
+      <span>{{ error }}</span>
     </div>
+    {% endif %}
+
+    <!-- Form -->
+    <div class="form-card" id="predict-form">
+      <div class="form-header">
+        <div class="form-header-icon">📋</div>
+        <div>
+          <h2>Health Parameters</h2>
+          <p>Fill in your clinical measurements for an accurate assessment</p>
+        </div>
+      </div>
+
+      <form action="/predict" method="post" id="diabetesForm">
+        <div class="input-grid">
+          {% for feat in features %}
+          <div class="input-group">
+            <label class="input-label" for="{{ feat.id }}">
+              <span class="icon">{{ feat.icon }}</span>
+              <span>{{ feat.name }}</span>
+            </label>
+            <input
+              type="number"
+              class="input-field"
+              id="{{ feat.id }}"
+              name="{{ feat.key }}"
+              placeholder="{{ feat.placeholder }}"
+              min="{{ feat.min }}"
+              max="{{ feat.max }}"
+              step="{{ feat.step }}"
+              value="{{ values[feat.key] if values else '' }}"
+              required
+            />
+            <div class="input-desc">{{ feat.description }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="btn-wrap">
+          <button type="submit" class="btn-predict" id="predict-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Analyze Risk
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Result -->
+    {% if result %}
+    <section class="result-section" id="result">
+      <div class="result-card">
+        <div class="gauge-container">
+          <svg viewBox="0 0 200 200" width="200" height="200">
+            <circle class="gauge-bg" cx="100" cy="100" r="85" />
+            <circle class="gauge-fill" cx="100" cy="100" r="85"
+              stroke="{{ risk.color }}"
+              stroke-dasharray="{{ 534 }}"
+              stroke-dashoffset="{{ 534 - (534 * probability / 100) }}"
+              transform="rotate(-90 100 100)"
+            />
+          </svg>
+          <div class="gauge-text">
+            <div class="gauge-pct" style="color: {{ risk.color }}">{{ probability }}%</div>
+            <div class="gauge-label">probability</div>
+          </div>
+        </div>
+
+        <div class="risk-badge" style="background: {{ risk.color }}22; color: {{ risk.color }}; border: 1px solid {{ risk.color }}44;">
+          <span>{{ risk.level }}</span>
+        </div>
+
+        <p class="risk-advice">{{ risk.advice }}</p>
+
+        {% if insights %}
+        <div class="insights-grid">
+          {% for ins in insights %}
+          <div class="insight-card">
+            <div class="insight-feature">
+              <span class="insight-status {{ ins.status }}"></span>
+              {{ ins.feature }} — <span style="text-transform: capitalize;">{{ ins.status }}</span>
+            </div>
+            <div class="insight-note">{{ ins.note }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="disclaimer">
+          <strong>⚠️ Disclaimer:</strong> This tool is for educational purposes only and should not replace professional medical advice. Always consult a qualified healthcare provider for diagnosis and treatment.
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>DiabCheck — Built with ML &amp; Flask &bull; Pima Indians Diabetes Dataset</p>
+    <p style="margin-top: 0.3rem;">For educational purposes only</p>
   </footer>
 
+  <script>
+    // Smooth scroll to result after prediction
+    {% if result %}
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    {% endif %}
 
-  <!--  Scripts-->
-  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src="/static/js/materialize.js"></script>
-  <script src="/static/js/init.js"></script>
+    // Add subtle animation to input focus
+    document.querySelectorAll('.input-field').forEach(input => {
+      input.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'translateY(-2px)';
+        this.parentElement.style.transition = 'transform 0.3s ease';
+      });
+      input.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'translateY(0)';
+      });
+    });
+  </script>
 
-  </body>
+</body>
 </html>
-
