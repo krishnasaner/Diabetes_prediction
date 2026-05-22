@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: insulix
+    runtime: python
+    buildCommand: pip install -r Diabetes_Prediction-Project-Code/requirements.txt
+    startCommand: cd Diabetes_Prediction-Project-Code && gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.0

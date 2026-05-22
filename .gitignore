@@ -1,0 +1,10 @@
+venv/
+venv-py38/
+__pycache__/
+*.pyc
+.env
+.vscode/
+*.egg-info/
+dist/
+build/
+.vercel/

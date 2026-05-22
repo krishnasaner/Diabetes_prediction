@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "Diabetes_Prediction-Project-Code/app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "Diabetes_Prediction-Project-Code/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "Diabetes_Prediction-Project-Code/app.py"
+    }
+  ]
+}
