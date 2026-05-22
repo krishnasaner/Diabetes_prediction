@@ -3,10 +3,18 @@ import pickle
 import pandas as pd
 import numpy as np
 
-app = Flask(__name__)
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(__name__, 
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static")
+)
 
 # Load the trained pipeline (includes scaler + model)
-model = pickle.load(open("Diabetes.pkl", "rb"))
+model_path = os.path.join(BASE_DIR, "Diabetes.pkl")
+model = pickle.load(open(model_path, "rb"))
 
 # Feature metadata for validation — icon field maps to Lucide SVG id in template
 FEATURES = [
