@@ -8,47 +8,47 @@ app = Flask(__name__)
 # Load the trained pipeline (includes scaler + model)
 model = pickle.load(open("Diabetes.pkl", "rb"))
 
-# Feature metadata for validation
+# Feature metadata for validation — icon field maps to Lucide SVG id in template
 FEATURES = [
     {
         'name': 'Pregnancies', 'key': '1', 'id': 'pregnancies',
         'placeholder': 'e.g. 2', 'min': 0, 'max': 20, 'step': 1,
-        'icon': '👶', 'description': 'Number of times pregnant'
+        'icon': 'baby', 'description': 'Number of times pregnant'
     },
     {
         'name': 'Glucose', 'key': '2', 'id': 'glucose',
         'placeholder': 'e.g. 120', 'min': 44, 'max': 200, 'step': 1,
-        'icon': '🩸', 'description': 'Plasma glucose concentration (mg/dL)'
+        'icon': 'droplet', 'description': 'Plasma glucose concentration (mg/dL)'
     },
     {
         'name': 'Blood Pressure', 'key': '3', 'id': 'bloodpressure',
         'placeholder': 'e.g. 72', 'min': 24, 'max': 122, 'step': 1,
-        'icon': '💓', 'description': 'Diastolic blood pressure (mm Hg)'
+        'icon': 'activity', 'description': 'Diastolic blood pressure (mm Hg)'
     },
     {
         'name': 'Skin Thickness', 'key': '4', 'id': 'skinthickness',
         'placeholder': 'e.g. 20', 'min': 0, 'max': 99, 'step': 1,
-        'icon': '📏', 'description': 'Triceps skin fold thickness (mm)'
+        'icon': 'layers', 'description': 'Triceps skin fold thickness (mm)'
     },
     {
         'name': 'Insulin', 'key': '5', 'id': 'insulin',
         'placeholder': 'e.g. 80', 'min': 0, 'max': 846, 'step': 1,
-        'icon': '💉', 'description': '2-Hour serum insulin (mu U/ml)'
+        'icon': 'syringe', 'description': '2-Hour serum insulin (mu U/ml)'
     },
     {
         'name': 'BMI', 'key': '6', 'id': 'bmi',
         'placeholder': 'e.g. 32.0', 'min': 10, 'max': 70, 'step': 0.1,
-        'icon': '⚖️', 'description': 'Body mass index (kg/m²)'
+        'icon': 'scale', 'description': 'Body mass index (kg/m²)'
     },
     {
         'name': 'Diabetes Pedigree', 'key': '7', 'id': 'dpf',
         'placeholder': 'e.g. 0.5', 'min': 0.05, 'max': 2.5, 'step': 0.001,
-        'icon': '🧬', 'description': 'Diabetes pedigree function (hereditary risk)'
+        'icon': 'dna', 'description': 'Diabetes pedigree function (hereditary risk)'
     },
     {
         'name': 'Age', 'key': '8', 'id': 'age',
         'placeholder': 'e.g. 30', 'min': 18, 'max': 100, 'step': 1,
-        'icon': '🎂', 'description': 'Age in years'
+        'icon': 'user', 'description': 'Age in years'
     },
 ]
 
@@ -58,21 +58,25 @@ COLUMN_NAMES = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness',
 def get_risk_level(probability):
     """Categorize risk based on probability."""
     if probability >= 0.75:
-        return {'level': 'High Risk', 'color': '#ef4444', 'advice': 'Consult a healthcare professional immediately.'}
+        return {'level': 'High Risk', 'color': '#EF4444', 'css_class': 'danger',
+                'advice': 'Consult a healthcare professional immediately for further evaluation.'}
     elif probability >= 0.50:
-        return {'level': 'Moderate Risk', 'color': '#f59e0b', 'advice': 'Schedule a check-up with your doctor soon.'}
+        return {'level': 'Moderate Risk', 'color': '#F59E0B', 'css_class': 'warning',
+                'advice': 'Schedule a check-up with your doctor for further assessment.'}
     elif probability >= 0.30:
-        return {'level': 'Low Risk', 'color': '#3b82f6', 'advice': 'Maintain a healthy lifestyle and monitor regularly.'}
+        return {'level': 'Low Risk', 'color': '#3B82F6', 'css_class': 'low',
+                'advice': 'Maintain a healthy lifestyle and continue regular monitoring.'}
     else:
-        return {'level': 'Minimal Risk', 'color': '#10b981', 'advice': 'Keep up the good work with your health habits!'}
+        return {'level': 'Minimal Risk', 'color': '#10B981', 'css_class': 'success',
+                'advice': 'Your indicators look healthy. Keep up the good habits.'}
 
 def get_feature_insights(values):
     """Provide insight for each feature value."""
     insights = []
     thresholds = {
-        'Glucose': (70, 140, 'Normal fasting glucose: 70-100 mg/dL'),
-        'BloodPressure': (60, 90, 'Normal diastolic BP: 60-80 mm Hg'),
-        'BMI': (18.5, 30, 'Normal BMI: 18.5-24.9 kg/m²'),
+        'Glucose': (70, 140, 'Normal fasting glucose: 70–100 mg/dL'),
+        'BloodPressure': (60, 90, 'Normal diastolic BP: 60–80 mm Hg'),
+        'BMI': (18.5, 30, 'Normal BMI: 18.5–24.9 kg/m²'),
         'Age': (0, 45, 'Risk increases significantly after age 45'),
     }
     for i, col in enumerate(COLUMN_NAMES):
@@ -80,11 +84,11 @@ def get_feature_insights(values):
             low, high, note = thresholds[col]
             val = values[i]
             if val > high:
-                insights.append({'feature': col, 'status': 'elevated', 'note': note})
+                insights.append({'feature': col, 'status': 'elevated', 'note': note, 'value': val})
             elif val < low:
-                insights.append({'feature': col, 'status': 'low', 'note': note})
+                insights.append({'feature': col, 'status': 'low', 'note': note, 'value': val})
             else:
-                insights.append({'feature': col, 'status': 'normal', 'note': note})
+                insights.append({'feature': col, 'status': 'normal', 'note': note, 'value': val})
     return insights
 
 
@@ -153,5 +157,5 @@ def api_predict():
 
 
 if __name__ == '__main__':
-    print("Starting the Flask application...")
+    print("Starting Insulix — Diabetes Risk Predictor...")
     app.run(host='127.0.0.1', port=8080, debug=True)
