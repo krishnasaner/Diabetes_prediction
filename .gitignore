@@ -3,6 +3,9 @@ venv-py38/
 venv/
 .venv/
 env/
+**/venv/
+**/.venv/
+**/env/
 
 # Python cache
 __pycache__/
@@ -10,20 +13,26 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+**/__pycache__/
 
-# Model & data files (keep .pkl tracked)
-*.csv
+# Model & data files
 *.xlsx
 
-# IDE
+# Secrets & Environment variables
+.env
+.env.*
+*.env
+*.pem
+*.key
+
+# IDE & System
 .vscode/
 .idea/
 *.code-workspace
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Vercel
+# Vercel & build
 .vercel/
 uv.lock
+
